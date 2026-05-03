@@ -1,685 +1,590 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Paulinho & Nat - Controle de Orçamento</title>
-    <link rel="manifest" href="data:application/json;base64,eyJuYW1lIjoiUGF1bGluaG8gJiBOYXQiLCJzaG9ydF9uYW1lIjoiUGF1TGFuY2UiLCJzdGFydF91cmwiOiIvIiwidGhlbWVfY29sb3IiOiIjN2M2YWY3Iiwic3RhdHVzX2JhciI6IiM3YzZhZjciLCJiYWNrZ3JvdW5kX2NvbG9yIjoiI2Y1ZjVmNSIsImRpc3BsYXkiOiJzdGFuZGFsb25lIiwiaWNvbnMiOlt7InNyYyI6ImRhdGE6aW1hZ2Uvc3ZnK3htbDt0ZXh0PjxzdmcgeG1sbnM9J2h0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnJyB3aWR0aD0nMTkyJyBoZWlnaHQ9JzE5Mic+PHRleHQgeD0nOTYnIHk9JzEyOCcgZm9udC1mYW1pbHk9J2NhbGlicmksc2Fucy1zZXJpZicgZm9udC1zaXplPScxMjgnIGZpbGw9JyM3YzZhZjcnPlA8L3RleHQ+PC9zdmc+Iiwic2l6ZXMiOiIxOTJ4MTkyIiwidHlwZSI6ImltYWdlL3N2ZyJ9XX0=">
-    <meta name="theme-color" content="#7c6af7">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="default">
-    <meta name="apple-mobile-web-app-title" content="Paulinho & Nat">
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Calibri:wght@400;700&display=swap');
-        * { box-sizing: border-box; }
-        body { font-family: 'Calibri', sans-serif; background: #f5f5f5; color: #1a1a1a; margin: 0; padding: 0; overflow-x: hidden; }
-        .header { background: linear-gradient(135deg, #7c6af7, #9f8fff); color: white; padding: 1rem; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 100; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
-        .avatar { width: 50px; height: 50px; background: rgba(255,255,255,0.2); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 24px; font-weight: bold; }
-        .sync-status { font-size: 0.8rem; opacity: 0.9; }
-        .main { padding: 1rem; min-height: calc(100vh - 140px); }
-        .card { background: white; border-radius: 18px; padding: 1.5rem; margin-bottom: 1rem; box-shadow: 0 4px 12px rgba(0,0,0,0.08); border: 1px solid #ddd; }
-        .hidden-value { filter: blur(4px); }
-        .toggle-hide { background: linear-gradient(135deg, #7c6af7, #9f8fff); color: white; border: none; padding: 0.5rem 1rem; border-radius: 20px; cursor: pointer; }
-        .period-toggle { display: flex; gap: 0.5rem; margin-bottom: 1rem; flex-wrap: wrap; }
-        .period-btn { padding: 0.5rem 1rem; border: 1px solid #ddd; background: white; border-radius: 20px; cursor: pointer; transition: all 0.3s; }
-        .period-btn.active { background: #7c6af7; color: white; border-color: #7c6af7; }
-        .launch-list { max-height: 400px; overflow-y: auto; }
-        .launch-item { display: flex; justify-content: space-between; align-items: center; padding: 1rem 0; border-bottom: 1px solid #eee; }
-        .launch-value { font-weight: bold; font-size: 1.2rem; }
-        .positive { color: #34d399; }
-        .negative { color: #f87171; }
-        .filters { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 1rem; }
-        .filter-chip { padding: 0.5rem 1rem; background: #f0f0f0; border-radius: 20px; cursor: pointer; white-space: nowrap; }
-        .filter-chip.active { background: #7c6af7; color: white; }
-        .sort-select { margin-left: auto; padding: 0.5rem; border: 1px solid #ddd; border-radius: 8px; }
-        .sum-display { font-size: 1.5rem; font-weight: bold; margin: 1rem 0; }
-        .fab { position: fixed; bottom: 90px; right: 20px; width: 60px; height: 60px; background: linear-gradient(135deg, #7c6af7, #9f8fff); color: white; border: none; border-radius: 50%; font-size: 24px; box-shadow: 0 6px 20px rgba(124,106,247,0.4); cursor: pointer; z-index: 200; }
-        .nav-bottom { position: fixed; bottom: 0; left: 0; right: 0; background: white; display: flex; border-top: 1px solid #ddd; box-shadow: 0 -4px 12px rgba(0,0,0,0.08); z-index: 150; }
-        .nav-item { flex: 1; padding: 1rem; text-align: center; cursor: pointer; transition: background 0.3s; }
-        .nav-item.active { background: #f0f0f0; }
-        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 300; align-items: center; justify-content: center; }
-        .modal-content { background: white; border-radius: 18px; padding: 2rem; max-width: 90%; max-height: 90%; overflow-y: auto; }
-        .close { float: right; font-size: 28px; cursor: pointer; }
-        input, select { width: 100%; padding: 0.75rem; margin: 0.5rem 0; border: 1px solid #ddd; border-radius: 8px; }
-        button { background: linear-gradient(135deg, #7c6af7, #9f8fff); color: white; border: none; padding: 0.75rem 1.5rem; border-radius: 8px; cursor: pointer; margin: 0.25rem; }
-        .budget-bar { height: 20px; background: #eee; border-radius: 10px; overflow: hidden; margin: 0.5rem 0; }
-        .budget-fill { height: 100%; transition: width 0.3s; }
-        .alert-yellow { border-left: 4px solid #facc15; }
-        .alert-red { border-left: 4px solid #f87171; }
-        .progress-bar { height: 30px; background: linear-gradient(90deg, #34d399, #10b981); border-radius: 15px; position: relative; cursor: pointer; }
-        .goal-item { margin-bottom: 1.5rem; }
-        canvas { max-width: 100%; height: 300px; }
-        .chip-scroll { display: flex; overflow-x: auto; gap: 0.5rem; padding: 0.5rem 0; }
-        @media (max-width: 768px) { .main { padding: 0.5rem; } }
-    </style>
-    <script src="https://www.gstatic.com/firebasejs/10.13.1/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.13.1/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.13.1/firebase-database-compat.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Paulinho & Nat - Finanças</title>
+  <style>
+    * { box-sizing: border-box; }
+    body { 
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; 
+      margin: 0; 
+      padding: 1rem; 
+      background: #f5f5f5; 
+      color: #333; 
+    }
+    #app { display: flex; flex-direction: column; height: 100vh; max-width: 600px; margin: auto; }
+    header { text-align: center; padding: 1rem 0; color: #333; }
+    header h1 { margin: 0; font-size: 1.8rem; }
+    .tabs { display: flex; background: white; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+    .tab-btn { 
+      flex: 1; 
+      padding: 1rem; 
+      border: none; 
+      background: #ddd; 
+      cursor: pointer; 
+      font-size: 1rem; 
+      white-space: nowrap; 
+    }
+    .tab-btn.active { background: #4CAF50; color: white; }
+    .tab-content { flex: 1; overflow: auto; padding: 1rem; display: none; background: white; border-radius: 8px; margin-top: 1rem; box-shadow: 0 -2px 4px rgba(0,0,0,0.1); }
+    .tab-content.active { display: block; }
+    form { display: grid; gap: 0.75rem; margin-bottom: 1.5rem; }
+    input, select, button { padding: 0.75rem; border: 1px solid #ddd; border-radius: 6px; font-size: 1rem; }
+    button { background: #4CAF50; color: white; border: none; cursor: pointer; font-weight: 500; }
+    button:hover { opacity: 0.9; }
+    .filters { display: grid; grid-template-columns: 1fr 1fr auto auto; gap: 0.5rem; margin-bottom: 1rem; }
+    .list { display: flex; flex-direction: column; gap: 0.75rem; }
+    .launch-item { 
+      display: flex; 
+      justify-content: space-between; 
+      align-items: center; 
+      padding: 1rem; 
+      background: #fafafa; 
+      border-radius: 8px; 
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1); 
+    }
+    .launch-info { flex: 1; }
+    .launch-info strong { display: block; margin-bottom: 0.25rem; }
+    .launch-value { font-weight: bold; font-size: 1.2rem; margin: 0 1rem; }
+    .entrada .launch-value { color: #4CAF50; }
+    .saida .launch-value { color: #f44336; }
+    .launch-actions { display: flex; gap: 0.5rem; }
+    .edit-btn { background: #2196F3; padding: 0.5rem 0.75rem; font-size: 0.875rem; }
+    .delete-btn { background: #f44336; padding: 0.5rem 0.75rem; font-size: 0.875rem; }
+    .goal-item { background: #fafafa; padding: 1rem; border-radius: 8px; margin-bottom: 1rem; }
+    .goal-item > div:first-child { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem; }
+    .progress-bar { width: 100%; height: 12px; background: #eee; border-radius: 6px; overflow: hidden; }
+    .progress-fill { height: 100%; background: linear-gradient(90deg, #4CAF50, #45a049); transition: width 0.3s ease; }
+    .goal-actions { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+    .goal-actions button { flex: 1; min-width: 120px; padding: 0.5rem; font-size: 0.875rem; }
+    .stat { display: flex; align-items: center; gap: 1rem; margin-bottom: 1.5rem; padding: 1.5rem; background: #fafafa; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+    .stat label { font-weight: bold; flex-shrink: 0; min-width: 140px; }
+    .hidden-value { visibility: hidden; font-size: 1.5rem; font-weight: bold; min-width: 120px; text-align: right; }
+    .hidden-value.show { visibility: visible; }
+    .positive { color: #4CAF50 !important; }
+    .negative { color: #f44336 !important; }
+    table { width: 100%; border-collapse: collapse; margin-top: 1rem; background: white; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+    th, td { padding: 1rem; text-align: left; border-bottom: 1px solid #eee; }
+    th { background: #f5f5f5; font-weight: 600; }
+    .total-cartao { font-size: 1.5rem; font-weight: bold; color: #f44336; text-align: center; padding: 1.5rem; background: #ffebee; border-radius: 8px; margin-bottom: 1rem; }
+    .period-info { background: #e3f2fd; padding: 1rem; border-radius: 8px; margin-bottom: 1rem; text-align: center; font-weight: 600; color: #1976d2; }
+    @media (max-width: 480px) { 
+      body { padding: 0.5rem; } 
+      .tabs { overflow-x: auto; } 
+      .filters { grid-template-columns: 1fr; } 
+      .launch-item { flex-direction: column; align-items: flex-start; gap: 0.5rem; } 
+      .launch-actions { width: 100%; justify-content: flex-end; } 
+    }
+  </style>
 </head>
 <body>
-    <header class="header">
-        <div style="display: flex; align-items: center; gap: 1rem;">
-            <div class="avatar">P</div>
-            <div>
-                <h2>Paulinho & Nat</h2>
-                <div id="syncStatus" class="sync-status">Conectando...</div>
-            </div>
-        </div>
+  <div id="app">
+    <header>
+      <h1>💕 Paulinho & Nat 💕</h1>
+      <p>Finanças em Família</p>
     </header>
-
-    <main class="main">
-        <!-- Home -->
-        <section id="home" class="tab-content active">
-            <div class="card">
-                <div style="display: flex; justify-content: space-between; align-items: center;">
-                    <h3 id="periodTitle">Mês</h3>
-                    <button class="toggle-hide" id="toggleHide" onclick="toggleHideValues()">Mostrar</button>
-                </div>
-                <div class="period-toggle">
-                    <button class="period-btn active" data-period="month">Mês</button>
-                    <button class="period-btn" data-period="card">Cartão</button>
-                    <button class="period-btn" data-period="ytd">YTD</button>
-                    <button class="period-btn" data-period="mat">MAT</button>
-                </div>
-                <div id="balance" class="sum-display hidden-value">R$ 0,00</div>
-                <div style="display: flex; gap: 1rem;">
-                    <div class="card" style="flex: 1;">
-                        <h4>Receitas</h4>
-                        <div id="totalIncome" class="sum-display hidden-value positive">R$ 0,00</div>
-                    </div>
-                    <div class="card" style="flex: 1;">
-                        <h4>Despesas</h4>
-                        <div id="totalExpenses" class="sum-display hidden-value negative">R$ 0,00</div>
-                    </div>
-                </div>
-            </div>
-            <div class="card">
-                <h4>Últimos 5 lançamentos</h4>
-                <div id="lastLaunches"></div>
-            </div>
-        </section>
-
-        <!-- Lançamentos -->
-        <section id="lancamentos" class="tab-content">
-            <div class="filters">
-                <div class="chip-scroll">
-                    <div class="filter-chip active" data-type="all">Todos</div>
-                    <div class="filter-chip" data-type="despesas">Despesas</div>
-                    <div class="filter-chip" data-type="receitas">Receitas</div>
-                    <div class="filter-chip" data-type="cartao">Cartão</div>
-                </div>
-            </div>
-            <div style="display: flex; align-items: center; gap: 1rem;">
-                <div class="chip-scroll" id="catFilters"></div>
-                <select class="sort-select" id="sortSelect">
-                    <option value="recent">Mais recente</option>
-                    <option value="high">Maior valor</option>
-                    <option value="low">Menor valor</option>
-                    <option value="dayAsc">Dia crescente</option>
-                    <option value="dayDesc">Dia decrescente</option>
-                </select>
-                <div id="filterSum" class="sum-display">R$ 0,00</div>
-            </div>
-            <div id="launchesList" class="launch-list"></div>
-        </section>
-
-        <!-- Orçamento -->
-        <section id="orcamento" class="tab-content">
-            <div class="card">
-                <h3>Orçamentos por Categoria (Mês Atual)</h3>
-                <canvas id="budgetChart"></canvas>
-            </div>
-            <button onclick="showBudgetModal()">Editar Orçamentos</button>
-        </section>
-
-        <!-- Metas -->
-        <section id="metas" class="tab-content">
-            <div class="card">
-                <h3>Metas Pessoais</h3>
-                <div id="personalGoals"></div>
-                <button onclick="showNewGoalModal('personal')">+ Nova Meta Pessoal</button>
-            </div>
-            <div class="card">
-                <h3>Metas Financeiras</h3>
-                <div id="financialGoals"></div>
-                <button onclick="showNewGoalModal('financial')">+ Nova Meta Financeira</button>
-            </div>
-        </section>
-
-        <!-- Relatório -->
-        <section id="relatorio" class="tab-content">
-            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1rem;">
-                <div class="card"><h4>Receitas</h4><div id="reportIncome">R$ 0,00</div></div>
-                <div class="card"><h4>Despesas</h4><div id="reportExpenses">R$ 0,00</div></div>
-                <div class="card"><h4>Saldo</h4><div id="reportBalance">R$ 0,00</div></div>
-                <div class="card"><h4>Cartão</h4><div id="reportCard">R$ 0,00</div></div>
-            </div>
-            <div class="card">
-                <h4>Despesas por Categoria</h4>
-                <div id="catExpenses"></div>
-            </div>
-            <div class="card">
-                <h4>Regra 50-30-20</h4>
-                <canvas id="ruleChart"></canvas>
-            </div>
-            <div style="display: flex; gap: 1rem;">
-                <div class="card" style="flex: 1;">
-                    <h4>YTD</h4>
-                    <div id="ytdSummary">Saldo: R$ 0,00</div>
-                </div>
-                <div class="card" style="flex: 1;">
-                    <h4>MAT</h4>
-                    <div id="matSummary">Saldo: R$ 0,00</div>
-                </div>
-            </div>
-            <button onclick="showReportModal()">Ver Gráficos</button>
-        </section>
-    </main>
-
-    <button class="fab" onclick="showLaunchModal()">+</button>
-
-    <nav class="nav-bottom">
-        <div class="nav-item active" data-tab="home">🏠 Início</div>
-        <div class="nav-item" data-tab="lancamentos">📊 Lançamentos</div>
-        <div class="nav-item" data-tab="orcamento">💰 Orçamento</div>
-        <div class="nav-item" data-tab="metas">🎯 Metas</div>
-        <div class="nav-item" data-tab="relatorio">📈 Relatório</div>
+    <nav class="tabs">
+      <button data-tab="home" class="tab-btn active">🏠 Home</button>
+      <button data-tab="lancamentos" class="tab-btn">📊 Lançamentos</button>
+      <button data-tab="metas" class="tab-btn">🎯 Metas</button>
+      <button data-tab="relatorios" class="tab-btn">📈 Relatórios</button>
+      <button data-tab="cartao" class="tab-btn">💳 Cartão</button>
     </nav>
-
-    <!-- Modal Lançamento -->
-    <div id="launchModal" class="modal">
-        <div class="modal-content">
-            <span class="close" onclick="closeModal('launchModal')">&times;</span>
-            <h3 id="modalTitle">Novo Lançamento</h3>
-            <input type="number" id="launchValue" placeholder="Valor (use vírgula)" step="0.01">
-            <input type="text" id="launchDesc" placeholder="Descrição">
-            <select id="launchCat"></select>
-            <select id="launchPayment">
-                <option>VA</option>
-                <option>VR</option>
-                <option>PIX/Boleto</option>
-                <option>Cartão crédito</option>
-                <option>Débito</option>
-                <option>Dinheiro</option>
-                <option>Outro</option>
-            </select>
-            <input type="date" id="launchDate">
-            <input type="number" id="repeatMonths" placeholder="Repetir por quantos meses? (0 para único)" min="0" value="0">
-            <button onclick="saveLaunch()">Salvar</button>
+    <main>
+      <section id="tab-home" class="tab-content active">
+        <div class="summary">
+          <div class="stat">
+            <label>Saldo:</label>
+            <span id="saldo-value" class="hidden-value">R$ 0,00</span>
+            <button id="toggle-values">👁️ Mostrar Valores</button>
+          </div>
+          <div class="stat">
+            <label>Total Entradas:</label>
+            <span id="entradas-value" class="hidden-value">R$ 0,00</span>
+          </div>
+          <div class="stat">
+            <label>Total Saídas:</label>
+            <span id="saidas-value" class="hidden-value">R$ 0,00</span>
+          </div>
+          <div id="goals-summary"></div>
         </div>
-    </div>
-
-    <!-- Modal Orçamento -->
-    <div id="budgetModal" class="modal">
-        <div class="modal-content">
-            <span class="close" onclick="closeModal('budgetModal')">&times;</span>
-            <h3>Editar Orçamentos</h3>
-            <div id="budgetInputs"></div>
-            <button onclick="saveBudgets()">Salvar</button>
+      </section>
+      <section id="tab-lancamentos" class="tab-content">
+        <form id="launch-form">
+          <select id="category-select" required>
+            <option value="">Selecione categoria</option>
+          </select>
+          <input type="number" id="value-input" placeholder="Valor (R$)" step="0.01" required>
+          <select id="type-select">
+            <option value="entrada">Entrada 💰</option>
+            <option value="saida">Saída 📉</option>
+          </select>
+          <input type="date" id="date-input" required>
+          <input type="text" id="desc-input" placeholder="Descrição (opcional)">
+          <button type="submit">💾 Salvar Lançamento</button>
+        </form>
+        <div class="filters">
+          <select id="filter-category">
+            <option value="all">Todas Categorias</option>
+          </select>
+          <select id="filter-type">
+            <option value="all">Todos Tipos</option>
+            <option value="entrada">Entradas</option>
+            <option value="saida">Saídas</option>
+          </select>
+          <button id="apply-filters">Filtrar</button>
+          <button id="clear-filters">Limpar</button>
         </div>
-    </div>
+        <div id="launches-list" class="list"></div>
+      </section>
+      <section id="tab-metas" class="tab-content">
+        <form id="goal-form">
+          <input type="text" id="goal-name" placeholder="Nome da Meta" required>
+          <input type="number" id="goal-target" placeholder="Valor Meta (R$)" step="0.01" required>
+          <select id="goal-category">
+            <option value="">Sem categoria</option>
+          </select>
+          <button type="submit">🎯 Adicionar Meta</button>
+        </form>
+        <div id="goals-list" class="list"></div>
+      </section>
+      <section id="tab-relatorios" class="tab-content">
+        <div id="reports-content"></div>
+      </section>
+      <section id="tab-cartao" class="tab-content">
+        <div class="period-info" id="cartao-period">Carregando...</div>
+        <div id="cartao-list" class="list"></div>
+      </section>
+    </main>
+  </div>
+  <script type="module">
+    import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
+    import { getDatabase, ref, push, update, remove, onValue, get, enableIndexedDbPersistence } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js';
 
-    <!-- Modal Nova Meta -->
-    <div id="goalModal" class="modal">
-        <div class="modal-content">
-            <span class="close" onclick="closeModal('goalModal')">&times;</span>
-            <h3 id="goalModalTitle">Nova Meta</h3>
-            <input type="text" id="goalName" placeholder="Nome da meta">
-            <input type="number" id="goalTarget" placeholder="Valor alvo">
-            <input type="month" id="goalDeadline">
-            <button onclick="saveGoal()">Salvar</button>
+    const firebaseConfig = {
+      apiKey: "AIzaSyAD_blUiZrIMK8gyKW1P7tIZNkmixwm9rs",
+      authDomain: "paulinho-nat-finance.firebaseapp.com",
+      databaseURL: "https://paulinho-nat-finance-default-rtdb.firebaseio.com",
+      projectId: "paulinho-nat-finance",
+      storageBucket: "paulinho-nat-finance.appspot.com",
+      messagingSenderId: "123",
+      appId: "1:123:web:abcdef123456"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+    enableIndexedDbPersistence(db).catch(console.warn);
+
+    const launchesRef = ref(db, 'launches');
+    const goalsRef = ref(db, 'goals');
+
+    let launches = [];
+    let goals = [];
+    let currentTab = 'home';
+    let editingLaunchId = null;
+    let editingGoalId = null;
+    let showValues = false;
+    let filterCat = 'all';
+    let filterType = 'all';
+
+    const categories = [
+      {id: 'alimentacao', name: 'Alimentação', emoji: '🥐'},
+      {id: 'transporte', name: 'Transporte', emoji: '🚗'},
+      {id: 'moradia', name: 'Moradia', emoji: '🏠'},
+      {id: 'lazer', name: 'Lazer', emoji: '🎮'},
+      {id: 'saude', name: 'Saúde', emoji: '💊'},
+      {id: 'educacao', name: 'Educação', emoji: '📚'},
+      {id: 'compras', name: 'Compras', emoji: '🛒'},
+      {id: 'supermercado', name: 'Supermercado', emoji: '🛍️'},
+      {id: 'restaurante', name: 'Restaurante', emoji: '🍽️'},
+      {id: 'salario', name: 'Salário', emoji: '💰'},
+      {id: 'freelance', name: 'Freelance', emoji: '💼'},
+      {id: 'investimentos', name: 'Investimentos', emoji: '📈'},
+      {id: 'cartao', name: 'Cartão de Crédito', emoji: '💳'},
+      {id: 'outros', name: 'Outros', emoji: '❓'}
+    ];
+
+    function getEmoji(catId) {
+      return categories.find(c => c.id === catId)?.emoji || '❓';
+    }
+
+    function formatCurrency(val) {
+      return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(val);
+    }
+
+    function populateCategorySelects() {
+      const selects = document.querySelectorAll('#category-select, #filter-category, #goal-category');
+      selects.forEach(select => {
+        categories.forEach(cat => {
+          const opt = document.createElement('option');
+          opt.value = cat.id;
+          opt.textContent = `${cat.emoji} ${cat.name}`;
+          select.appendChild(opt);
+        });
+      });
+    }
+
+    function setDateToToday() {
+      document.getElementById('date-input').value = new Date().toISOString().split('T')[0];
+    }
+
+    // Tab switching
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        currentTab = e.target.dataset.tab;
+        document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        e.target.classList.add('active');
+        document.getElementById(`tab-${currentTab}`).classList.add('active');
+        renderCurrentTab();
+      });
+    });
+
+    // Toggle values
+    const toggleBtn = document.getElementById('toggle-values');
+    toggleBtn.addEventListener('click', () => {
+      showValues = !showValues;
+      toggleBtn.textContent = showValues ? '👁️ Ocultar Valores' : '👁️ Mostrar Valores';
+      document.querySelectorAll('.hidden-value').forEach(el => {
+        el.classList.toggle('show', showValues);
+      });
+    });
+
+    // Firebase listeners
+    onValue(launchesRef, (snap) => {
+      launches = Object.entries(snap.val() || {}).map(([id, data]) => ({
+        id,
+        ...data,
+        date: new Date(data.date),
+        value: parseFloat(data.value) || 0
+      })).sort((a, b) => b.date - a.date);
+      renderCurrentTab();
+    });
+
+    onValue(goalsRef, (snap) => {
+      goals = Object.entries(snap.val() || {}).map(([id, data]) => ({
+        id,
+        ...data,
+        target: parseFloat(data.target) || 0,
+        current: parseFloat(data.current) || 0
+      }));
+      renderCurrentTab();
+    });
+
+    // Launch form
+    document.getElementById('launch-form').addEventListener('submit', (e) => {
+      e.preventDefault();
+      const data = {
+        category: document.getElementById('category-select').value,
+        value: parseFloat(document.getElementById('value-input').value),
+        type: document.getElementById('type-select').value,
+        date: document.getElementById('date-input').value,
+        desc: document.getElementById('desc-input').value
+      };
+      if (!data.category || !data.value || !data.date) {
+        alert('Preencha categoria, valor e data!');
+        return;
+      }
+      if (editingLaunchId) {
+        editLaunch(editingLaunchId, data);
+        editingLaunchId = null;
+      } else {
+        saveLaunch(data);
+      }
+      document.getElementById('launch-form').reset();
+      setDateToToday();
+      document.getElementById('category-select').value = '';
+    });
+
+    function saveLaunch(data) {
+      push(launchesRef, data);
+    }
+
+    function editLaunch(id, data) {
+      update(ref(db, `launches/${id}`), data);
+    }
+
+    function deleteLaunch(id) {
+      if (confirm('Confirmar exclusão do lançamento?')) {
+        remove(ref(db, `launches/${id}`));
+      }
+    }
+
+    // Goal form
+    document.getElementById('goal-form').addEventListener('submit', (e) => {
+      e.preventDefault();
+      const data = {
+        name: document.getElementById('goal-name').value,
+        target: parseFloat(document.getElementById('goal-target').value),
+        category: document.getElementById('goal-category').value,
+        current: 0
+      };
+      if (!data.name || !data.target) {
+        alert('Preencha nome e valor da meta!');
+        return;
+      }
+      if (editingGoalId) {
+        update(ref(db, `goals/${editingGoalId}`), data);
+        editingGoalId = null;
+      } else {
+        push(goalsRef, data);
+      }
+      document.getElementById('goal-form').reset();
+      document.getElementById('goal-category').value = '';
+    });
+
+    function addGoalProgress(goalId, amount) {
+      const goalRef = ref(db, `goals/${goalId}`);
+      get(goalRef).then((snap) => {
+        const data = snap.val();
+        if (data) {
+          update(goalRef, { current: (data.current || 0) + amount });
+        }
+      });
+    }
+
+    function addGoalContribution(goalId, amount, desc) {
+      addGoalProgress(goalId, amount);
+      // Could push to contributions if needed
+    }
+
+    function deleteGoal(id) {
+      if (confirm('Confirmar exclusão da meta?')) {
+        remove(ref(db, `goals/${id}`));
+      }
+    }
+
+    // Filters
+    document.getElementById('apply-filters').addEventListener('click', () => {
+      filterCat = document.getElementById('filter-category').value;
+      filterType = document.getElementById('filter-type').value;
+      renderCurrentTab();
+    });
+
+    document.getElementById('clear-filters').addEventListener('click', () => {
+      document.getElementById('filter-category').value = 'all';
+      document.getElementById('filter-type').value = 'all';
+      filterCat = 'all';
+      filterType = 'all';
+      renderCurrentTab();
+    });
+
+    function getFilteredLaunches() {
+      return launches.filter(l => 
+        (filterCat === 'all' || l.category === filterCat) &&
+        (filterType === 'all' || l.type === filterType)
+      );
+    }
+
+    function createLaunchItem(launch) {
+      const div = document.createElement('div');
+      div.className = `launch-item ${launch.type}`;
+      const catName = categories.find(c => c.id === launch.category)?.name || launch.category;
+      const emoji = getEmoji(launch.category);
+      const sign = launch.type === 'entrada' ? '+' : '-';
+      div.innerHTML = `
+        <div class="launch-info">
+          <strong>${emoji} ${launch.desc || catName}</strong>
+          <span>${launch.date.toLocaleDateString('pt-BR')}</span>
         </div>
-    </div>
-
-    <!-- Modal Relatório Gráficos -->
-    <div id="reportModal" class="modal">
-        <div class="modal-content">
-            <span class="close" onclick="closeModal('reportModal')">&times;</span>
-            <h3>Gráficos Detalhados</h3>
-            <div style="display: flex; gap: 1rem;">
-                <button id="tabEvolucao">Evolução</button>
-                <button id="tabCategorias">Categorias</button>
-            </div>
-            <canvas id="detailChart"></canvas>
-            <div id="insights"></div>
-            <button onclick="exportCSV()">Exportar CSV</button>
+        <div class="launch-value">${sign} ${formatCurrency(launch.value)}</div>
+        <div class="launch-actions">
+          <button class="edit-btn" onclick="editLaunchFromForm('${launch.id}')">Editar</button>
+          <button class="delete-btn" onclick="deleteLaunchClicked('${launch.id}')">Deletar</button>
         </div>
-    </div>
+      `;
+      return div;
+    }
 
-    <script>
-        // Firebase Config
-        const firebaseConfig = {
-            apiKey: "AIzaSyAD_blUiZrIMK8gyKW1P7tIZNkmixwm9rs",
-            authDomain: "financas-paulinho-e-nat.firebaseapp.com",
-            databaseURL: "https://financas-paulinho-e-nat-default-rtdb.firebaseio.com",
-            projectId: "financas-paulinho-e-nat",
-            storageBucket: "financas-paulinho-e-nat.firebasestorage.app",
-            messagingSenderId: "850504875868",
-            appId: "1:850504875868:web:e3afb1af57d32058e3cb99"
-        };
+    // Global functions for onclick
+    window.editLaunchFromForm = (id) => {
+      const launch = launches.find(l => l.id === id);
+      if (launch) {
+        editingLaunchId = id;
+        document.getElementById('category-select').value = launch.category;
+        document.getElementById('value-input').value = launch.value;
+        document.getElementById('type-select').value = launch.type;
+        document.getElementById('date-input').value = launch.date.toISOString().split('T')[0];
+        document.getElementById('desc-input').value = launch.desc || '';
+        document.querySelector('[data-tab="lancamentos"]').click();
+      }
+    };
 
-        // Initialize Firebase
-        firebase.initializeApp(firebaseConfig);
-        const auth = firebase.auth();
-        const db = firebase.database();
+    window.deleteLaunchClicked = (id) => deleteLaunch(id);
 
-        // Persistence
-        db.enablePersistence().catch(err => console.log('Persistence failed:', err));
+    window.editGoalFromForm = (id) => {
+      const goal = goals.find(g => g.id === id);
+      if (goal) {
+        editingGoalId = id;
+        document.getElementById('goal-name').value = goal.name;
+        document.getElementById('goal-target').value = goal.target;
+        document.getElementById('goal-category').value = goal.category || '';
+        document.querySelector('[data-tab="metas"]').click();
+      }
+    };
 
-        // State
-        let currentUser = null;
-        let launches = [];
-        let budgets = {};
-        let personalGoals = [];
-        let financialGoals = [];
-        let hideValues = true;
-        let currentPeriod = 'month';
-        let currentFilters = { type: 'all', cat: 'all', sort: 'recent' };
-        let categories = [
-            '🛒 Supermercado', '🏠 Moradia', '🚗 Transporte', '🏥 Saúde', '💼 Trabalho',
-            '👨‍👩‍👧 Família', '📈 Investimentos', '🎲 Gastos Variáveis', '✈️ Viagens',
-            '🎭 Lazer', '🍽️ Restaurante', '📱 Assinatura', '👕 Vestuário', '❓ Outro'
-        ];
-        let catEmojis = categories.map(c => c.split(' ')[0]);
-        let currentMonthKey = new Date().toISOString().slice(0,7);
+    window.deleteGoalClicked = (id) => deleteGoal(id);
 
-        // Auth
-        auth.signInAnonymously().then(user => {
-            currentUser = user.user;
-            loadData();
-            updateSyncStatus('Sincronizado · ' + new Date().toLocaleTimeString('pt-BR'));
-        }).catch(err => console.error(err));
+    window.addProgressClicked = (id) => {
+      const amountStr = prompt('Valor a adicionar ao progresso:');
+      const amount = parseFloat(amountStr);
+      if (amount && amount > 0) {
+        addGoalProgress(id, amount);
+      }
+    };
 
-        // Data refs
-        const dataRef = db.ref('paulinho-nat');
-        dataRef.onDisconnect().remove();
+    window.addContributionClicked = (id) => {
+      const amountStr = prompt('Valor da contribuição:');
+      const amount = parseFloat(amountStr);
+      const desc = prompt('Descrição (opcional):');
+      if (amount && amount > 0) {
+        addGoalContribution(id, amount, desc);
+      }
+    };
 
-        // Sync
-        dataRef.child('launches').on('value', snap => {
-            launches = snap.val() || [];
-            renderLaunches();
-            updateHome();
-            updateReport();
-            updateSyncStatus('Sincronizado · ' + new Date().toLocaleTimeString('pt-BR'));
-        });
-        dataRef.child('budgets').on('value', snap => {
-            budgets = snap.val() || {};
-            renderBudgets();
-        });
-        dataRef.child('personalGoals').on('value', snap => {
-            personalGoals = snap.val() || [];
-            renderGoals();
-        });
-        dataRef.child('financialGoals').on('value', snap => {
-            financialGoals = snap.val() || [];
-            renderGoals();
-        });
+    function renderCurrentTab() {
+      switch (currentTab) {
+        case 'home': renderHome(); break;
+        case 'lancamentos': renderLaunches(); break;
+        case 'metas': renderGoals(); break;
+        case 'relatorios': renderReports(); break;
+        case 'cartao': renderCartao(); break;
+      }
+    }
 
-        function loadData() {
-            // Loaded via listeners
-        }
+    function renderHome() {
+      const entradas = launches.filter(l => l.type === 'entrada').reduce((sum, l) => sum + l.value, 0);
+      const saidas = launches.filter(l => l.type === 'saida').reduce((sum, l) => sum + l.value, 0);
+      const saldo = entradas - saidas;
 
-        function updateSyncStatus(status) {
-            document.getElementById('syncStatus').textContent = status;
-        }
+      document.getElementById('entradas-value').textContent = formatCurrency(entradas);
+      document.getElementById('entradas-value').className = 'hidden-value positive';
+      document.getElementById('saidas-value').textContent = formatCurrency(saidas);
+      document.getElementById('saidas-value').className = 'hidden-value negative';
+      const saldoEl = document.getElementById('saldo-value');
+      saldoEl.textContent = formatCurrency(saldo);
+      saldoEl.className = `hidden-value ${saldo >= 0 ? 'positive' : 'negative'}`;
 
-        // Tab navigation
-        document.querySelectorAll('.nav-item').forEach(item => {
-            item.onclick = () => switchTab(item.dataset.tab);
-        });
+      const summary = document.getElementById('goals-summary');
+      summary.innerHTML = '';
+      goals.forEach(g => {
+        const perc = (g.current / g.target * 100);
+        const div = document.createElement('div');
+        div.className = 'goal-progress stat';
+        div.innerHTML = `
+          <label>${getEmoji(g.category)} ${g.name}</label>
+          <span>${formatCurrency(g.current)} / ${formatCurrency(g.target)} (${perc.toFixed(1)}%)</span>
+          <div class="progress-bar">
+            <div class="progress-fill" style="width: ${Math.min(100, perc)}%;"></div>
+          </div>
+        `;
+        summary.appendChild(div);
+      });
+    }
 
-        function switchTab(tab) {
-            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-            document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
-            document.getElementById(tab).classList.add('active');
-            event.target.closest('.nav-item').classList.add('active');
-            if (tab === 'orcamento') renderBudgets();
-            if (tab === 'metas') renderGoals();
-        }
+    function renderLaunches() {
+      const filtered = getFilteredLaunches();
+      const container = document.getElementById('launches-list');
+      container.innerHTML = '';
+      filtered.forEach(launch => {
+        container.appendChild(createLaunchItem(launch));
+      });
+    }
 
-        // Period toggle
-        document.querySelectorAll('.period-btn').forEach(btn => {
-            btn.onclick = () => {
-                document.querySelectorAll('.period-btn').forEach(b => b.classList.remove('active'));
-                btn.classList.add('active');
-                currentPeriod = btn.dataset.period;
-                updateHome();
-            };
-        });
+    function renderGoals() {
+      const container = document.getElementById('goals-list');
+      container.innerHTML = '';
+      goals.forEach(goal => {
+        const div = document.createElement('div');
+        div.className = 'goal-item';
+        const perc = (goal.current / goal.target * 100);
+        div.innerHTML = `
+          <div>
+            <strong>${getEmoji(goal.category)} ${goal.name}</strong>
+            <span>${formatCurrency(goal.current)} / ${formatCurrency(goal.target)} (${perc.toFixed(1)}%)</span>
+          </div>
+          <div class="progress-bar">
+            <div class="progress-fill" style="width: ${Math.min(100, perc)}%;"></div>
+          </div>
+          <div class="goal-actions">
+            <button onclick="addProgressClicked('${goal.id}')">+ Progresso</button>
+            <button onclick="addContributionClicked('${goal.id}')">+ Contribuição</button>
+            <button class="edit-btn" onclick="editGoalFromForm('${goal.id}')">Editar</button>
+            <button class="delete-btn" onclick="deleteGoalClicked('${goal.id}')">Deletar</button>
+          </div>
+        `;
+        container.appendChild(div);
+      });
+    }
 
-        // Filters
-        document.querySelectorAll('.filter-chip[data-type]').forEach(chip => {
-            chip.onclick = () => {
-                document.querySelectorAll('[data-type]').forEach(c => c.classList.remove('active'));
-                chip.classList.add('active');
-                currentFilters.type = chip.dataset.type;
-                renderLaunches();
-            };
-        });
+    function renderReports() {
+      const container = document.getElementById('reports-content');
+      container.innerHTML = '<h3>Relatórios por Categoria</h3>';
+      const catTotals = {};
+      launches.forEach(l => {
+        if (!catTotals[l.category]) catTotals[l.category] = { entrada: 0, saida: 0 };
+        catTotals[l.category][l.type] += l.value;
+      });
+      let tableHTML = '<table><thead><tr><th>Categoria</th><th>Entradas</th><th>Saídas</th><th>Saldo</th></tr></thead><tbody>';
+      Object.entries(catTotals).forEach(([catId, totals]) => {
+        const saldo = totals.entrada - totals.saida;
+        const saldoClass = saldo >= 0 ? 'positive' : 'negative';
+        tableHTML += `
+          <tr>
+            <td>${getEmoji(catId)} ${categories.find(c => c.id === catId)?.name}</td>
+            <td>${formatCurrency(totals.entrada)}</td>
+            <td>${formatCurrency(totals.saida)}</td>
+            <td class="${saldoClass}">${formatCurrency(saldo)}</td>
+          </tr>
+        `;
+      });
+      tableHTML += '</tbody></table>';
+      container.innerHTML += tableHTML;
+    }
 
-        document.getElementById('sortSelect').onchange = (e) => {
-            currentFilters.sort = e.target.value;
-            renderLaunches();
-        };
+    function getCartaoPeriod() {
+      const now = new Date();
+      const year = now.getFullYear();
+      const month = now.getMonth();
+      let startDate, endDate;
+      if (now.getDate() <= 18) {
+        endDate = new Date(year, month, 18);
+        startDate = new Date(year, month - 1, 19);
+      } else {
+        startDate = new Date(year, month, 19);
+        endDate = new Date(year, month + 1, 18);
+      }
+      return { start: startDate.toISOString().split('T')[0], end: endDate.toISOString().split('T')[0], startDate, endDate };
+    }
 
-        // Cat filters
-        function renderCatFilters() {
-            const container = document.getElementById('catFilters');
-            container.innerHTML = '<div class="filter-chip active" data-cat="all">Todas</div>' + 
-                categories.map((cat, i) => `<div class="filter-chip" data-cat="${i}">${catEmojis[i]}</div>`).join('');
-            container.querySelectorAll('[data-cat]').forEach(chip => {
-                chip.onclick = () => {
-                    container.querySelectorAll('[data-cat]').forEach(c => c.classList.remove('active'));
-                    chip.classList.add('active');
-                    currentFilters.cat = chip.dataset.cat;
-                    renderLaunches();
-                };
-            });
-        }
-        renderCatFilters();
+    function renderCartao() {
+      const period = getCartaoPeriod();
+      document.getElementById('cartao-period').textContent = `Período do Cartão: ${period.startDate.toLocaleDateString('pt-BR')} até ${period.endDate.toLocaleDateString('pt-BR')}`;
 
-        // Launches
-        function showLaunchModal(editId = null) {
-            const modal = document.getElementById('launchModal');
-            document.getElementById('modalTitle').textContent = editId ? 'Editar Lançamento' : 'Novo Lançamento';
-            if (editId) {
-                const launch = launches.find(l => l.id === editId);
-                if (launch) {
-                    document.getElementById('launchValue').value = Math.abs(launch.value);
-                    document.getElementById('launchDesc').value = launch.desc;
-                    document.getElementById('launchCat').value = launch.cat;
-                    document.getElementById('launchPayment').value = launch.payment;
-                    document.getElementById('launchDate').value = launch.date.slice(0,10);
-                    document.getElementById('repeatMonths').value = 0;
-                }
-            } else {
-                document.getElementById('launchDate').value = new Date().toISOString().slice(0,10);
-                // clear others
-            }
-            document.getElementById('launchCat').innerHTML = categories.map((c,i) => `<option value="${i}">${c}</option>`).join('');
-            modal.style.display = 'flex';
-        }
+      const filtered = launches.filter(l => {
+        const ldate = l.date.toISOString().split('T')[0];
+        return ldate >= period.start && ldate <= period.end;
+      });
 
-        function closeModal(id) {
-            document.getElementById(id).style.display = 'none';
-        }
+      const container = document.getElementById('cartao-list');
+      container.innerHTML = '';
 
-        function saveLaunch() {
-            const value = parseFloat(document.getElementById('launchValue').value.replace(',','.')) * (document.getElementById('launchValue').value.includes('-') ? -1 : -1); // assume expense negative? Wait, adjust
-            // Actually, make positive for income, negative for expense? Prompt has receitas/despesas, so value signed.
-            // For simplicity, value always positive, type separate? But no type field, infer from value or add.
-            // To match, let's add type: select Despesa/Receita
-            // Wait, prompt no type field, but filter has. Assume value >0 receita, <0 despesa.
-            const isExpense = true; // simplify, or ask user.
-            const v = parseFloat(document.getElementById('launchValue').value.replace(',','.'));
-            const launch = {
-                id: Date.now().toString(),
-                value: -v, // default expense
-                desc: document.getElementById('launchDesc').value,
-                cat: parseInt(document.getElementById('launchCat').value),
-                payment: document.getElementById('launchPayment').value,
-                date: document.getElementById('launchDate').value,
-                timestamp: Date.now()
-            };
-            const repeat = parseInt(document.getElementById('repeatMonths').value) || 0;
-            const saves = [launch];
-            for (let i = 1; i <= repeat; i++) {
-                const nextDate = new Date(launch.date);
-                nextDate.setMonth(nextDate.getMonth() + i);
-                saves.push({...launch, id: Date.now() + i + '', date: nextDate.toISOString().slice(0,10), timestamp: Date.now() + i*86400000});
-            }
-            dataRef.child('launches').push(saves[0]); // simplify, push one, repeat manual
-            closeModal('launchModal');
-        }
+      const totalSaidas = filtered.filter(l => l.type === 'saida').reduce((sum, l) => sum + l.value, 0);
+      const totalDiv = document.createElement('div');
+      totalDiv.className = 'total-cartao';
+      totalDiv.textContent = `Total Estimado Fatura: ${formatCurrency(totalSaidas)}`;
+      container.appendChild(totalDiv);
 
-        function renderLaunches() {
-            let filtered = launches.filter(l => {
-                const isExpense = l.value < 0;
-                const isIncome = l.value > 0;
-                const isCard = l.payment === 'Cartão crédito';
-                if (currentFilters.type === 'despesas' && !isExpense) return false;
-                if (currentFilters.type === 'receitas' && !isIncome) return false;
-                if (currentFilters.type === 'cartao' && !isCard) return false;
-                if (currentFilters.cat !== 'all' && l.cat != currentFilters.cat) return false;
-                return true;
-            });
-            filtered.sort((a,b) => {
-                switch(currentFilters.sort) {
-                    case 'high': return Math.abs(b.value) - Math.abs(a.value);
-                    case 'low': return Math.abs(a.value) - Math.abs(b.value);
-                    case 'dayAsc': return new Date(a.date) - new Date(b.date);
-                    case 'dayDesc': return new Date(b.date) - new Date(a.date);
-                    default: return b.timestamp - a.timestamp;
-                }
-            });
-            const sum = filtered.reduce((s,l) => s + l.value, 0);
-            document.getElementById('filterSum').textContent = formatCurrency(sum);
-            const list = document.getElementById('launchesList');
-            list.innerHTML = filtered.map(l => `
-                <div class="launch-item">
-                    <div>
-                        <div style="font-weight: bold;">${l.desc || ''} ${catEmojis[l.cat] || ''}</div>
-                        <div>${l.date} - ${l.payment}</div>
-                    </div>
-                    <div class="launch-value ${l.value > 0 ? 'positive' : 'negative'}">${formatCurrency(l.value)}</div>
-                    <div>
-                        <button onclick="editLaunch('${l.id}')">Editar</button>
-                        <button onclick="deleteLaunch('${l.id}')">Excluir</button>
-                    </div>
-                </div>
-            `).join('');
-        }
+      filtered.forEach(launch => {
+        container.appendChild(createLaunchItem(launch));
+      });
+    }
 
-        function editLaunch(id) { showLaunchModal(id); }
-        function deleteLaunch(id) {
-            dataRef.child('launches').orderByChild('id').equalTo(id).once('value', snap => {
-                snap.forEach(child => child.ref.remove());
-            });
-        }
-
-        // Home update
-        function updateHome() {
-            // Filter launches by period
-            const now = new Date();
-            let filtered = launches.filter(l => {
-                const d = new Date(l.date);
-                switch(currentPeriod) {
-                    case 'month': return d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth();
-                    case 'card': {
-                        const closeDay = 18;
-                        if (d.getDate() <= closeDay) {
-                            return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
-                        } else {
-                            return d.getMonth() === (now.getMonth() - 1 + 12) % 12 && d.getFullYear() === now.getFullYear();
-                        }
-                    }
-                    // YTD, MAT simplify
-                    default: return true;
-                }
-            });
-            const income = filtered.filter(l => l.value > 0).reduce((s,l) => s + l.value, 0);
-            const expenses = Math.abs(filtered.filter(l => l.value < 0).reduce((s,l) => s + l.value, 0));
-            const balance = income - expenses;
-            document.getElementById('balance').textContent = formatCurrency(balance);
-            document.getElementById('totalIncome').textContent = formatCurrency(income);
-            document.getElementById('totalExpenses').textContent = formatCurrency(-expenses);
-            document.getElementById('periodTitle').textContent = currentPeriod.toUpperCase();
-
-            // Last 5
-            filtered.sort((a,b) => b.timestamp - a.timestamp).slice(0,5).forEach(l => {
-                document.getElementById('lastLaunches').innerHTML += `<div>${catEmojis[l.cat]} ${l.desc} ${formatCurrency(l.value)}</div>`;
-            });
-            document.getElementById('lastLaunches').innerHTML = filtered.slice(0,5).map(l => `<div class="launch-item"><span>${catEmojis[l.cat]} ${l.desc}</span><span>${formatCurrency(l.value)}</span></div>`).join('');
-        }
-
-        // Hide/Show
-        function toggleHideValues() {
-            hideValues = !hideValues;
-            document.querySelectorAll('.hidden-value').forEach(el => el.classList.toggle('hidden-value'));
-            document.getElementById('toggleHide').textContent = hideValues ? 'Mostrar' : 'Esconder';
-        }
-
-        // Budgets
-        function renderBudgets() {
-            const ctx = document.getElementById('budgetChart').getContext('2d');
-            if (window.budgetChart) window.budgetChart.destroy();
-            const monthBudgets = budgets[currentMonthKey] || {};
-            const labels = categories;
-            const data = labels.map(cat => {
-                const spent = Math.abs(launches.filter(l => l.cat === labels.indexOf(cat) && isThisMonth(l.date)).reduce((s,l) => s + l.value, 0));
-                const budget = monthBudgets[cat] || 0;
-                return budget ? (spent / budget * 100) : 0;
-            });
-            const bgColors = data.map(d => d > 100 ? '#f87171' : d > 80 ? '#facc15' : '#34d399');
-            window.budgetChart = new Chart(ctx, {
-                type: 'bar',
-                data: { labels, datasets: [{ data, backgroundColor: bgColors }] },
-                options: { scales: { y: { beginAtZero: true, max: 150 } } }
-            });
-        }
-
-        function showBudgetModal() {
-            const container = document.getElementById('budgetInputs');
-            container.innerHTML = categories.map(cat => `
-                <div>
-                    <label>${cat}</label>
-                    <input type="number" data-cat="${cat}" placeholder="Orçamento mensal" value="${budgets[currentMonthKey]?.[cat] || ''}">
-                </div>
-            `).join('');
-            document.getElementById('budgetModal').style.display = 'flex';
-        }
-
-        function saveBudgets() {
-            const monthBudgets = {};
-            document.querySelectorAll('#budgetInputs input').forEach(inp => {
-                const val = parseFloat(inp.value);
-                if (val > 0) monthBudgets[inp.dataset.cat] = val;
-            });
-            dataRef.child('budgets').child(currentMonthKey).set(monthBudgets);
-            closeModal('budgetModal');
-        }
-
-        // Goals
-        function renderGoals() {
-            // Personal
-            document.getElementById('personalGoals').innerHTML = personalGoals.map(g => `
-                <div class="goal-item">
-                    <h4>${g.name}</h4>
-                    <div class="progress-bar" style="width: ${Math.min((g.monthlyDone / g.monthlyTarget)*100,100)}%" onclick="showGoalDetails('${g.id}')"></div>
-                    <button onclick="addGoalProgress('${g.id}', 'monthly')">+1</button>
-                    <button onclick="editGoal('${g.id}')">Edit</button>
-                </div>
-            `).join('');
-
-            // Financial
-            document.getElementById('financialGoals').innerHTML = financialGoals.map(g => `
-                <div class="goal-item">
-                    <h4>${g.name} (R$ ${formatCurrency(g.saved)} / ${formatCurrency(g.target)})</h4>
-                    <div class="progress-bar" style="width: ${(g.saved / g.target)*100}%"></div>
-                    <button onclick="addGoalContribution('${g.id}')">+R$</button>
-                    <button onclick="editGoal('${g.id}')">Edit</button>
-                </div>
-            `).join('');
-        }
-
-        function showNewGoalModal(type) {
-            document.getElementById('goalModalTitle').textContent = `Nova Meta ${type === 'personal' ? 'Pessoal' : 'Financeira'}`;
-            document.getElementById('goalModal').dataset.type = type;
-            document.getElementById('goalModal').style.display = 'flex';
-        }
-
-        function saveGoal() {
-            const type = document.getElementById('goalModal').dataset.type;
-            const goal = {
-                id: Date.now().toString(),
-                name: document.getElementById('goalName').value,
-                target: parseFloat(document.getElementById('goalTarget').value),
-                deadline: document.getElementById('goalDeadline').value,
-                ...(type === 'personal' ? {monthlyTarget: parseFloat(document.getElementById('goalTarget').value), monthlyDone: 0, annualDone: 0} : {saved: 0})
-            };
-            dataRef.child(type === 'personal' ? 'personalGoals' : 'financialGoals').push(goal);
-            closeModal('goalModal');
-        }
-
-        // Stub for goal functions
-        function addGoalProgress(id, period) { /* impl */ dataRef.child(`personalGoals/${id}/${period}Done`).transaction(c => (c||0) + 1); }
-        function addGoalContribution(id) { /* prompt amount, add to saved */ }
-        function editGoal(id) { /* show modal */ }
-        function showGoalDetails(id) { alert('Detalhes da meta'); }
-
-        // Report
-        function updateReport() {
-            // Similar to home, full period
-            const income = launches.filter(l => l.value > 0).reduce((s,l) => s + l.value, 0);
-            const expenses = Math.abs(launches.filter(l => l.value < 0).reduce((s,l) => s + l.value, 0));
-            document.getElementById('reportIncome').textContent = formatCurrency(income);
-            document.getElementById('reportExpenses').textContent = formatCurrency(-expenses);
-            document.getElementById('reportBalance').textContent = formatCurrency(income - expenses);
-            // Card total: filter payment 'Cartão crédito'
-            const cardTotal = Math.abs(launches.filter(l => l.payment === 'Cartão crédito' && l.value < 0).reduce((s,l) => s + l.value, 0));
-            document.getElementById('reportCard').textContent = formatCurrency(-cardTotal);
-
-            // Cat expenses
-            const catExp = {};
-            launches.filter(l => l.value < 0).forEach(l => {
-                catExp[l.cat] = (catExp[l.cat] || 0) + Math.abs(l.value);
-            });
-            document.getElementById('catExpenses').innerHTML = Object.entries(catExp).map(([i,v]) => 
-                `<div>${categories[i]}: ${formatCurrency(-v)}</div>`
-            ).join('');
-
-            // 50-30-20 chart
-            const needs = 0.5 * expenses;
-            const wants = 0.3 * expenses;
-            const savings = 0.2 * expenses;
-            const ctx = document.getElementById('ruleChart').getContext('2d');
-            if (window.ruleChart) window.ruleChart.destroy();
-            window.ruleChart = new Chart(ctx, {
-                type: 'doughnut',
-                data: {
-                    labels: ['Necessidades 50%', 'Desejos 30%', 'Poupança 20%'],
-                    datasets: [{ data: [needs, wants, savings], backgroundColor: ['#34d399', '#7c6af7', '#f87171'] }]
-                }
-            });
-        }
-
-        function showReportModal() {
-            document.getElementById('reportModal').style.display = 'flex';
-            // Render charts etc.
-        }
-
-        function exportCSV() {
-            const csv = launches.map(l => `${l.date},${l.desc},${categories[l.cat]},${l.payment},${l.value}`).join('\n');
-            const blob = new Blob([csv], {type: 'text/csv'});
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = 'lancamentos.csv';
-            a.click();
-        }
-
-        // Utils
-        function formatCurrency(val) {
-            return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(val);
-        }
-
-        function isThisMonth(dateStr) {
-            const d = new Date(dateStr);
-            const now = new Date();
-            return d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth();
-        }
-
-        // PWA
-        if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('data:text/javascript;base64,' + btoa(`
-                self.addEventListener('fetch', e => e.respondWith(fetch(e.request)));
-                self.addEventListener('install', e => e.waitUntil(self.skipWaiting()));
-            `));
-        }
-
-        // Initial renders
-        renderCatFilters();
-    </script>
+    // Init
+    populateCategorySelects();
+    setDateToToday();
+    renderCurrentTab();
+  </script>
 </body>
 </html>
